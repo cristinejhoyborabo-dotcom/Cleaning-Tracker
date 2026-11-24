@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#315b48">
+<meta name="description" content="A simple home cleaning checklist for busy working days.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>My Home Cleaning Tracker</title>
+<style>
+:root{--green:#315b48;--mint:#e8f1eb;--cream:#f7f6f1;--ink:#25352d;--muted:#718078;--line:#e5e9e5}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--green);color:white;padding:25px 20px 22px;border-radius:0 0 24px 24px}
+.headerrow{display:flex;align-items:center;gap:12px}.logo{font-size:30px}.eyebrow{font-size:11px;letter-spacing:1.4px;opacity:.8;font-weight:700}
+h1{font-size:23px;margin:3px 0 0}header p{font-size:13px;opacity:.85;margin:8px 0 0}
+main{max-width:650px;margin:auto;padding:16px 15px 40px}
+.progress{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:-3px;box-shadow:0 4px 18px #203b2a0a}
+.prow{display:flex;justify-content:space-between;align-items:center}.pct{font-size:28px;font-weight:800;color:var(--green)}
+.track{height:9px;background:#edf0ed;border-radius:20px;overflow:hidden;margin:9px 0 5px}.fill{height:100%;width:0;background:#4b8a68;border-radius:20px;transition:width .2s}
+.small{font-size:12px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0}
+.tab{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 3px;font-weight:650;color:var(--muted);font-size:13px}
+.tab.active{background:var(--green);color:white;border-color:var(--green)}
+.panel{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:11px 0}
+.grouphead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+h2{font-size:16px;margin:0}.time{font-size:11px;color:var(--muted)}
+.task{display:flex;gap:11px;align-items:flex-start;padding:11px 2px;border-top:1px solid #f0f2f0;font-size:14px}
+.task input{appearance:none;width:21px;height:21px;min-width:21px;border:1.7px solid #a9b8ae;border-radius:7px;margin:0;position:relative;background:white}
+.task input:checked{background:var(--green);border-color:var(--green)}
+.task input:checked:after{content:"✓";color:white;position:absolute;left:4px;top:-1px;font-size:16px;font-weight:800}
+.task.done span{text-decoration:line-through;color:#91a097}
+.actions{display:flex;gap:9px;margin-top:14px}.btn{border:1px solid var(--line);background:white;border-radius:11px;padding:10px 13px;font-weight:650;color:var(--green);font-size:13px}
+.btn.primary{background:var(--green);color:white;border-color:var(--green);flex:1}
+.install{display:none;width:100%;margin-top:12px}.footer{text-align:center;color:var(--muted);font-size:11px;padding:18px 0}
+.note{background:var(--mint);border-radius:13px;padding:12px;font-size:12px;color:#385846;margin-top:13px}
+@media(min-width:520px){header{padding-left:max(20px,calc((100% - 610px)/2));padding-right:max(20px,calc((100% - 610px)/2))}}
+</style>
+</head>
+<body>
+<header>
+ <div class="headerrow"><div class="logo">🏡</div><div><div class="eyebrow">YOUR LITTLE HOME ROUTINE</div><h1>My Home Cleaning Tracker</h1></div></div>
+ <p>Small tasks, calmer home. A routine made for your working hours.</p>
+</header>
+<main>
+ <section class="progress">
+  <div class="prow"><div><strong id="progressTitle">Today's progress</strong><div class="small" id="progressSub">Your checklist</div></div><div class="pct" id="pct">0%</div></div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="small" id="count">0 of 0 tasks completed</div>
+ </section>
+ <button class="btn primary install" id="installBtn">＋ Install app on this phone</button>
+ <nav class="tabs" aria-label="Task categories">
+  <button class="tab active" data-tab="Daily">Daily</button><button class="tab" data-tab="Weekly">Weekly</button><button class="tab" data-tab="Sunday">Sunday</button><button class="tab" data-tab="Monthly">Monthly</button>
+ </nav>
+ <div id="taskArea"></div>
+ <div class="actions"><button class="btn" id="resetBtn">Reset this checklist</button><button class="btn" id="exportBtn">Export progress</button></div>
+ <div class="note">Your checkmarks are saved on this device automatically. Sunday afternoon is reserved for rest. You do not need to finish every task when you are tired.</div>
+ <div class="footer">My Home Cleaning Tracker · Your progress stays on this device</div>
+</main>
+<script>
+const data={
+ Daily:[
+  {name:"Morning",time:"Before work",items:["Ayusin ang kama","Ilagay ang maruruming damit sa laundry basket"]},
+  {name:"Evening",time:"After work · 7:45 PM",items:["Hugasan ang pinggan","Punasan ang kitchen counter","Ligpitin ang mga gamit","I-check ang basura","Ihanda ang gamit para bukas"]}
+ ],
+ Weekly:[
+  {name:"Monday · Kitchen",items:["Punasan ang kalan","Linisin ang kitchen counter","Ayusin ang mga pagkain"]},
+  {name:"Tuesday · Bedroom",items:["Ayusin ang bedroom","Ligpitin ang damit","Punasan ang bedside table"]},
+  {name:"Wednesday · Bathroom",items:["Linisin ang toilet bowl","Linisin ang lababo","Ayusin ang toiletries"]},
+  {name:"Thursday · Living area",items:["Punasan ang TV at mesa","Ayusin ang sofa","Tanggalin ang alikabok"]},
+  {name:"Friday · Floor & trash",items:["Walisin ang bahay","Spot-clean ang sahig","Ilabas ang basura"]},
+  {name:"Saturday · Preparation",items:["Ipunin ang laundry","I-sort ang mga damit","Ihanda ang cleaning materials"]}
+ ],
+ Sunday:[
+  {name:"Laundry",time:"7:30 AM",items:["Maglaba ng damit","Maglaba ng towels at basahan","Isampay ang damit"]},
+  {name:"Kitchen & CR",time:"9:00 AM",items:["General cleaning ng CR","Linisin ang lababo","Linisin ang kalan at counter"]},
+  {name:"Bedroom & sala",time:"10:00 AM",items:["Palitan ang bedsheets","Punasan ang furniture","Tanggalin ang alikabok","Ayusin ang mga gamit"]},
+  {name:"Floor cleaning",time:"11:00 AM",items:["Walisin ang buong bahay","I-mop ang sahig"]},
+  {name:"Afternoon · Rest time",items:["Tiklupin ang tuyong laundry","Meal preparation","Personal rest time"]}
+ ],
+ Monthly:[
+  {name:"Once a month",items:["Linisin ang electric fan","Linisin ang windows at grills","Punasan ang mga pinto","I-organize ang cabinet","I-check ang expired food","Linisin ang ilalim ng appliances","I-check ang household supplies"]}
+ ]
+};
+let tab="Daily";
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+function dateKey(d=new Date()){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function mondayKey(){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return dateKey(d)}
+function storageKey(category){
+ if(category==="Daily")return "daily-"+dateKey();
+ if(category==="Weekly")return "weekly-"+mondayKey();
+ if(category==="Sunday")return "sunday-"+dateKey();
+ return "monthly-"+new Date().getFullYear()+"-"+pad(new Date().getMonth()+1);
+}
+function read(){try{return JSON.parse(localStorage.getItem(storageKey(tab))||"{}")}catch(e){return {}}}
+function save(state){localStorage.setItem(storageKey(tab),JSON.stringify(state))}
+function render(){
+ const area=$("taskArea"),state=read();area.innerHTML="";
+ let total=0,done=0;
+ data[tab].forEach((group,gi)=>{
+  const card=document.createElement("section");card.className="panel";
+  const head=document.createElement("div");head.className="grouphead";
+  const title=document.createElement("h2");title.textContent=group.name;head.appendChild(title);
+  if(group.time){const time=document.createElement("span");time.className="time";time.textContent=group.time;head.appendChild(time)}
+  card.appendChild(head);
+  group.items.forEach((item,ii)=>{
+   total++;const key=gi+"-"+ii,checked=!!state[key];if(checked)done++;
+   const label=document.createElement("label");label.className="task"+(checked?" done":"");
+   const input=document.createElement("input");input.type="checkbox";input.checked=checked;input.setAttribute("aria-label",item);
+   input.addEventListener("change",()=>{const next=read();next[key]=input.checked;save(next);render()});
+   const span=document.createElement("span");span.textContent=item;label.append(input,span);card.appendChild(label);
+  });
+  area.appendChild(card);
+ });
+ const pct=total?Math.round(done/total*100):0;
+ $("pct").textContent=pct+"%";$("fill").style.width=pct+"%";$("count").textContent=done+" of "+total+" tasks completed";
+ $("progressTitle").textContent=tab==="Daily"?"Today's progress":tab==="Weekly"?"This week's progress":tab==="Sunday"?"Sunday progress":"This month's progress";
+ $("progressSub").textContent=pct===100?"All done! Enjoy your rest.":"One task at a time.";
+ $("resetBtn").textContent="Reset "+tab.toLowerCase()+" checklist";
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.tab;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));render()}));
+$("resetBtn").addEventListener("click",()=>{if(confirm("Clear the checkmarks for this "+tab.toLowerCase()+" checklist?")){localStorage.removeItem(storageKey(tab));render()}});
+$("exportBtn").addEventListener("click",()=>{
+ const out={exportedAt:new Date().toISOString(),progress:{}};
+ Object.keys(localStorage).filter(k=>k.startsWith("daily-")||k.startsWith("weekly-")||k.startsWith("sunday-")||k.startsWith("monthly-")).forEach(k=>out.progress[k]=JSON.parse(localStorage.getItem(k)||"{}"));
+ const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="home-cleaning-progress.json";a.click();URL.revokeObjectURL(url);
+});
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").style.display="block"});
+$("installBtn").addEventListener("click",async()=>{if(!deferredPrompt){alert('Sa Chrome menu, piliin ang "Install app" o "Add to Home screen".');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").style.display="none"});
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+render();
+</script>
+</body></html>
